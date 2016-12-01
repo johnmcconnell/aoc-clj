@@ -4,7 +4,9 @@
 
 (deftest understanding-parenthesis
   (testing "open-parens inc floor"
-    (is (= (floor "(((") 3)))
+    (let [floor (-> (climb "(((") :floor)]
+      (is (= floor 3))))
 
   (testing "closed-parens dec floor"
-    (is (= (floor ")))") -3))))
+    (let [floor (-> (climb ")))") :floor)]
+      (is (= floor -3)))))
