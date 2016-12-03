@@ -45,6 +45,47 @@
         {x :x y :y} (reduce step init-state cmds)]
     (+ (abs x) (abs y))))
 
+(defn record-freq
+  [freqs {x :x y :y}]
+  (let [v {:x x :y y}
+        prev (freqs v)]
+    (if-not (nil? prev)
+      {:done true :x x :y y}
+      (assoc freqs v 1))))
+
+(defn first-crossed
+  [visited]
+  (let [with-history (reductions record-freq {} visited)
+        first-repeat (take-while #(not (% :done)) with-history)]
+    (nth with-history (count first-repeat))))
+
+(defn record-walk-y
+  [x py y]
+  (if (< py y)
+    (map (fn [ny] {:x x :y ny}) (range py y))
+    (map (fn [ny] {:x x :y ny}) (range py y -1))))
+
+(defn record-walk-x
+  [y px x]
+  (if (< px x)
+    (map (fn [nx] {:x nx :y y}) (range px x))
+    (map (fn [nx] {:x nx :y y}) (range px x -1))))
+
+(defn record-walk
+  [[{px :x py :y} {x :x y :y}]]
+  (if (= px x)
+    (record-walk-y x py y)
+    (record-walk-x y px x)))
+
+(defn *delta-blocks
+  [& inputs]
+  (let [init-state {:x 0 :y 0 :direction :north}
+        cmds (map parse-cmd inputs)
+        reduxes (reductions step init-state cmds)
+        visited (apply concat (map record-walk (partition 2 1 reduxes)))
+        {x :x y :y} (first-crossed visited)]
+    (+ (abs x) (abs y))))
+
 (defn parse-inputs
   [input]
   (clojure.string/split input #", "))
@@ -54,5 +95,5 @@
   (->> args
       first
       parse-inputs
-      (apply delta-blocks)
+      (apply *delta-blocks)
       println))

@@ -32,3 +32,7 @@
 
   (testing "right 5, left 5, right 5, right 3"
     (is (= 12 (delta-blocks "R5" "L5" "R5" "R3")))))
+
+(deftest double-up-delta-blocks
+  (testing "right 8, right 4, right 4, right 8"
+    (is (= 4 (*delta-blocks "R8" "R4" "R4" "R8")))))
