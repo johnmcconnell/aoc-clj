@@ -31,3 +31,10 @@
                  :checksum   "decoy"}
           expected false]
       (is (= expected (valid-token? input))))))
+
+(deftest decrypt-token-test
+  (testing "a simple token"
+    (let [input {:ciphertext "qzmt-zixmtkozy-ivhz"
+                 :sector-id  343}
+          expected "very encrypted name"]
+      (is (= expected (decrypt-token input))))))

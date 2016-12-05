@@ -1,6 +1,29 @@
 (ns day-4.core
   (:gen-class))
 
+(def lower-chars
+  (map char (range 97 123)))
+
+(defn rot
+  [offset]
+  (fn [c]
+    (if (= c \-)
+      \space
+      (->
+        (int c)
+        (-  97)
+        (+ offset)
+        (mod 26)
+        (+ 97)
+        char))))
+
+(defn decrypt-token
+  [{:keys [ciphertext sector-id]}]
+  (let [rot-cipher (rot sector-id)]
+    (->>
+      (map rot-cipher ciphertext)
+      (apply str))))
+
 (defn parse-token
   [input]
   (let [checksum-st-idx (.lastIndexOf input "[")
@@ -35,11 +58,11 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (->> *in*
-      slurp
-      clojure.string/split-lines
-      (map parse-token)
-      (filter valid-token?)
-      (map :sector-id)
-      (reduce +)
-      println))
+  (let [tokens (->> *in*
+                    slurp
+                    clojure.string/split-lines
+                    (map parse-token)
+                    (filter valid-token?)
+                    (map #(assoc % :text (decrypt-token %))))]
+    (doseq [token tokens]
+      (println token))))
