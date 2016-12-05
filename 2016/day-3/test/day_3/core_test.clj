@@ -15,3 +15,13 @@
 (deftest parse-triangle-test
   (testing "it can parse a triangle"
     (is (= [1 2 3] (parse-triangle "  1   2    3  ")))))
+
+(deftest parse-by-column-test
+  (testing "it can parse triangles by column"
+    (let [input (str "100  200 300  \n"
+                     "101   201 301\n"
+                     "102 202   302 \n")
+          expected [[100 101 102]
+                    [200 201 202]
+                    [300 301 302]]]
+      (is (= expected (parse-by-column input))))))

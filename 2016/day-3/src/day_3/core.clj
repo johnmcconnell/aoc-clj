@@ -7,6 +7,26 @@
     (->> (clojure.string/split trimmed #"\s+")
          (map #(Integer. %)))))
 
+(defn collect-triangles
+  [coll [col1 col2 col3]])
+
+(defn collect-triangles
+  [coll triplet]
+  (let [t1 (map #(nth % 0) triplet)
+        t2 (map #(nth % 1) triplet)
+        t3 (map #(nth % 2) triplet)
+        triangles [t1 t2 t3]]
+    (concat coll triangles)))
+
+(defn parse-by-column
+  [input]
+  (->>
+    input
+    clojure.string/split-lines
+    (map parse-triangle)
+    (partition 3)
+    (reduce collect-triangles [])))
+
 (defn fst-2-elems-gt-eq
   [coll]
   (>
@@ -24,8 +44,9 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (->> (line-seq (java.io.BufferedReader. *in*))
-      (map parse-triangle)
-      (filter valid-triangle?)
-      count
-      println))
+  (->>
+    (slurp *in*)
+    parse-by-column
+    (filter valid-triangle?)
+    count
+    println))
