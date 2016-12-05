@@ -13,6 +13,12 @@
   (testing "test a given md5 digent"
     (is (= "00000155f8105dff7f56ee10fa9b9abd" (md5-digest "abc3231929")))))
 
-(deftest password-test
+; this test is expensive
+;(deftest password-test
+;  (testing "finding a given password"
+;    (is (= "18f47a30" (password "abc")))))
+
+; this test is expensive
+(deftest password-2-test
   (testing "finding a given password"
-    (is (= "18f47a30" (password "abc")))))
+    (is (= "05ace8e3" (password-2 "abc")))))
