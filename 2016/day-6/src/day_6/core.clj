@@ -7,8 +7,7 @@
 
 (defn by-column
   [lines]
-  (let [msg-cnt (count (first lines))
-        line-cnt (count lines)]
+  (let [msg-cnt (count (first lines))]
     (->
       (map
         #(->>
@@ -23,6 +22,13 @@
        (take 1)
        first))
 
+(defn least-feq-char
+  [string]
+  (->> (frequencies string)
+       (sort-by val <)
+       (take 1)
+       first))
+
 (defn corrected-message
   [input]
   (->> input
@@ -32,11 +38,20 @@
        (map first)
        (apply str)))
 
+(defn corrected-message-2
+  [input]
+  (->> input
+       clojure.string/split-lines
+       by-column
+       (map least-feq-char)
+       (map first)
+       (apply str)))
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
   (->>
     *in*
     slurp
-    corrected-message
+    corrected-message-2
     println))
