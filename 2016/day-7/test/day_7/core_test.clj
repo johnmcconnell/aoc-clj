@@ -14,8 +14,7 @@
     (is (= true (supports-tls? "abba[mnop]qrst"))))
 
   (testing "using abcd[bddb]xyyx"
-    (is (= false (supports-tls? "abcd[bddb]xyyx"))))
-
+    (is (= false (supports-tls? "abcd[bddb]xyyx")))) 
   (testing "using ioxxoj[asdfgh]zxcvbn"
     (is (= true (supports-tls? "ioxxoj[asdfgh]zxcvbn"))))
 
@@ -31,3 +30,24 @@
 
   (testing "using aaa"
     (is (= false (aba? "aaa")))))
+
+(deftest bab?-test
+  (testing "using aba"
+    (is (= true (bab? "bab" "aba"))))
+
+  (testing "using aaa"
+    (is (= false (bab? "cac" "aba")))))
+
+(deftest supports-ssl?-test
+  (testing "example 1"
+    (is (= true (supports-ssl? "aba[bab]xyz"))))
+
+  (testing "example 2"
+    (is (= false (supports-ssl? "xyx[xyx]xyx"))))
+
+  (testing "example 3"
+    (is (= true (supports-ssl? "aaa[kek]eke"))))
+
+  (testing "example 4"
+    (is (= true (supports-ssl? "zazbz[bzb]cdb")))))
+
