@@ -98,16 +98,20 @@
                  "column"
                  (rotate-col mx (instr-> args :idx) (instr-> args :step))))))
 
+(defn clear-it
+  [x]
+  (condp = x
+    0 " "
+    1 "*"))
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (->>
-    *in*
-    slurp
-    clojure.string/split-lines
-    (reduce
-      instr-dispatch (fill-mx 0 6 50))
-    flatten
-    (filter #(= 1 %))
-    count
-    println))
+  (let [mx (->>
+             *in*
+             slurp
+             clojure.string/split-lines
+             (reduce
+               instr-dispatch (fill-mx 0 6 50)))]
+    (doseq [line mx]
+      (println (apply str (map clear-it line))))))
