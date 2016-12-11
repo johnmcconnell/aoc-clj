@@ -88,8 +88,7 @@
         (map parse-cmd)
         cycle
         (reductions #(%2 %1) initial-board)
-        (filter (bot-has chips))
-        (take 1))))
+        (map println))))
 
 (defn -main
   "I don't do a whole lot ... yet."
