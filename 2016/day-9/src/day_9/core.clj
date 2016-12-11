@@ -63,6 +63,75 @@
     :res
     (apply str)))
 
+(defn conj-c-2
+  ([c] (conj-c-2 c 1))
+  ([c i]
+   #(apply conj % (repeat i c))))
+
+(defn expand
+  [{rep-cnt :rep-cnt char-cnt :char-cnt}]
+  #(concat
+     (flatten
+       (repeat (dec rep-cnt) (take char-cnt %))) %))
+
+(defn decomp-2-char
+  [{:keys [res cnt act s rep-cnt char-cnt] :as state}]
+  (let [[c & rst] s]
+    (condp = act
+      :bgn-parse (condp = c
+                   \x (->
+                        state
+                        (assoc :act :nxt-parse)
+                        (update-in [:s] rest))
+                   (->
+                     state
+                     (update-in [:char-cnt] (conj-c-2 c))
+                     (update-in [:s] rest)))
+      :nxt-parse (condp = c
+                   \) (->
+                        state
+                        (assoc :act :end-parse)
+                        (update-in [:s] rest))
+                   (->
+                     state
+                     (update-in [:rep-cnt] (conj-c-2 c))
+                     (update-in [:s] rest)))
+      :end-parse (let [rep-cnt-i (->>
+                                   rep-cnt
+                                   reverse
+                                   (apply str)
+                                   Integer.)
+                       char-cnt-i (->>
+                                    char-cnt
+                                    reverse
+                                    (apply str)
+                                    Integer.)
+                       instr {:rep-cnt rep-cnt-i
+                              :char-cnt char-cnt-i}]
+                   (->
+                     state
+                     (update-in [:s] (expand instr))
+                     (assoc :act nil)
+                     (assoc :rep-cnt nil)
+                     (assoc :char-cnt nil)))
+      (condp = c
+        \( (->
+             state
+             (assoc :act :bgn-parse)
+             (update-in [:s] rest))
+        (->
+          state
+          (update-in [:cnt] inc)
+          (update-in [:s] rest))))))
+
+(defn decompress-2
+  [s]
+  (->>
+    (iterate decomp-2-char {:s s :cnt 1})
+    (take-while #(not (empty? (% :s))))
+    last
+    :cnt))
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
