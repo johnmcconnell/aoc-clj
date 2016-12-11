@@ -63,74 +63,45 @@
     :res
     (apply str)))
 
-(defn conj-c-2
-  ([c] (conj-c-2 c 1))
-  ([c i]
-   #(apply conj % (repeat i c))))
+(defn subsec
+  ([s start] (drop start s))
+  ([s start end]
+   (->>
+     s
+     (drop start)
+     (take (- end start)))))
 
-(defn expand
-  [{rep-cnt :rep-cnt char-cnt :char-cnt}]
-  #(concat
-     (flatten
-       (repeat (dec rep-cnt) (take char-cnt %))) %))
+(defn parse-instr
+  [s]
+  (when s
+    (let [[char-cnt rep-cnt] (clojure.string/split s #"x")
+          char-cnt-i (Integer. (subs char-cnt 1))
+          rep-cnt-i   (Integer.  (subs rep-cnt 0 (dec (count rep-cnt))))]
+      {:char-cnt char-cnt-i :rep-cnt rep-cnt-i})))
 
-(defn decomp-2-char
-  [{:keys [res cnt act s rep-cnt char-cnt] :as state}]
-  (let [[c & rst] s]
-    (condp = act
-      :bgn-parse (condp = c
-                   \x (->
-                        state
-                        (assoc :act :nxt-parse)
-                        (update-in [:s] rest))
-                   (->
-                     state
-                     (update-in [:char-cnt] (conj-c-2 c))
-                     (update-in [:s] rest)))
-      :nxt-parse (condp = c
-                   \) (->
-                        state
-                        (assoc :act :end-parse)
-                        (update-in [:s] rest))
-                   (->
-                     state
-                     (update-in [:rep-cnt] (conj-c-2 c))
-                     (update-in [:s] rest)))
-      :end-parse (let [rep-cnt-i (->>
-                                   rep-cnt
-                                   reverse
-                                   (apply str)
-                                   Integer.)
-                       char-cnt-i (->>
-                                    char-cnt
-                                    reverse
-                                    (apply str)
-                                    Integer.)
-                       instr {:rep-cnt rep-cnt-i
-                              :char-cnt char-cnt-i}]
-                   (->
-                     state
-                     (update-in [:s] (expand instr))
-                     (assoc :act nil)
-                     (assoc :rep-cnt nil)
-                     (assoc :char-cnt nil)))
-      (condp = c
-        \( (->
-             state
-             (assoc :act :bgn-parse)
-             (update-in [:s] rest))
-        (->
-          state
-          (update-in [:cnt] inc)
-          (update-in [:s] rest))))))
+(defn next-s
+  [s]
+  (let [[match rst] (clojure.string/split s #"\(\d+x\d+\)" 2)]
+    {:cnt (count match) :next-s rst}))
+
+(defn find-instr
+  [s]
+  (let [instr-s (re-find #"\(\d+x\d+\)" s)
+        instr (parse-instr instr-s)]
+    (if (nil? instr)
+      {:cnt (count s) :done true}
+      (merge instr (next-s s)))))
 
 (defn decompress-2
   [s]
-  (->>
-    (iterate decomp-2-char {:s s :cnt 1})
-    (take-while #(not (empty? (% :s))))
-    last
-    :cnt))
+  (let [{:keys [cnt done char-cnt rep-cnt next-s]} (find-instr s)]
+    ;(println cnt done char-cnt rep-cnt next-s)
+    (if done
+      cnt
+      (+
+       cnt
+       (* rep-cnt (decompress-2 (subs next-s 0 char-cnt)))
+       (decompress-2 (subs next-s char-cnt))))))
 
 (defn -main
   "I don't do a whole lot ... yet."
@@ -140,6 +111,5 @@
     slurp
     (remove #(re-matches #"\s+" (str %)))
     (apply str)
-    decompress
-    count
+    decompress-2
     println))
