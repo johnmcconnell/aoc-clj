@@ -1,9 +1,13 @@
 (ns day-10.core
   (:gen-class))
 
-(def init-state
-  {:bots {1 [3]
-          2 [2 5]}})
+(def instrs
+  ["value 5 goes to bot 2"
+   "bot 2 gives low to bot 1 and high to bot 0"
+   "value 3 goes to bot 1"
+   "bot 1 gives low to output 1 and high to bot 0"
+   "bot 0 gives low to output 2 and high to output 0"
+   "value 2 goes to bot 2"])
 
 (defn conj-s
   [s v]
@@ -33,11 +37,13 @@
       [board]
       (let [chips (get-in board [:bots bot])
             [low high] (sort chips)]
-        (->
+        (if (< (count chips) 2)
           board
-          (assoc-in [:bots bot] #{})
-          (update-in [low-type low-bot] #(conj-s % low))
-          (update-in [high-type high-bot] #(conj-s % high)))))))
+          (->
+            board
+            (assoc-in [:bots bot] #{})
+            (update-in [low-type low-bot] #(conj-s % low))
+            (update-in [high-type high-bot] #(conj-s % high))))))))
 
 (defn parse-cmd
   [cmd]
@@ -61,7 +67,36 @@
       (map parse-cmd)
       (reduce #(%2 %1) board))))
 
+(defn bot-has
+  [chips]
+  (fn
+    [board]
+    (let [matches (filter #(= chips (second %)) (board :bots))]
+      (if (= (count matches) 0)
+        false
+        true))))
+
+(defn find-bot
+  [chips board & cmds]
+  (let [val-cmds
+        (filter #(= (first (clojure.string/split % #"\s+")) "value") cmds)
+        bot-cmds
+        (filter #(= (first (clojure.string/split % #"\s+")) "bot") cmds)
+        initial-board (reduce #(%2 %1) board (map parse-cmd val-cmds))]
+      (->>
+        bot-cmds
+        (map parse-cmd)
+        cycle
+        (reductions #(%2 %1) initial-board)
+        (filter (bot-has chips))
+        (take 1))))
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (println "Hello, World!"))
+  (->>
+    *in*
+    slurp
+    clojure.string/split-lines
+    (apply find-bot #{61 17} {:bots {}})
+    println))
