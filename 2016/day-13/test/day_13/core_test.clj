@@ -28,11 +28,11 @@
 
 (deftest next-valid-positions-test
   (testing "gets adjacent"
-    (let [[visited x y] [{} 1 1]
+    (let [[visited x y] [#{} 1 1]
           result #{[0 1] [1 2]}]
       (is (= result (next-valid-positions visited 10 x y))))))
 
-(deftest min-dist-test
+(deftest mindist-test
   (testing "from 1,1 to 1,1"
     (is (= 0 (mindist 10 [1 1] [1 1]))))
 
