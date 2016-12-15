@@ -52,7 +52,7 @@
   [{:keys [visited d seed next-pts end] :as state}]
   (cond
     (some #{end} next-pts) (assoc state :done true)
-    (= d 10000000) (assoc state :done true)
+    (= d 50) (assoc state :done true)
     :else (let [{next-pts :next-pts
                  visited :visited}
                 (reduce
@@ -82,9 +82,25 @@
     first
     :d))
 
+(defn mindist-2
+  [seed pos end]
+  (->>
+    (iterate
+      breadth-first-iter
+      {:visited #{pos}
+       :d 0
+       :seed seed
+       :next-pts [pos]
+       :end end
+       :done false})
+    (drop-while #(not (% :done)))
+    first
+    :visited
+    count))
+
 (defn -main
   "I don't do a whole lot."
   [& args]
   (->
-    (mindist 1350 [1 1] [31 39])
+    (mindist-2 1350 [1 1] [31 39])
     println))
