@@ -70,5 +70,8 @@
                  "dec a"]
           expected {:stack_ptr 6
                     :stack instrs
-                    :a 42}]
+                    :a 42
+                    :b 0
+                    :c 0
+                    :d 0}]
       (is (= expected (exec instrs))))))
