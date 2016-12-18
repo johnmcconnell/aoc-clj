@@ -42,6 +42,15 @@
                 :c 15}]
       (is (= out ((parse "jnz 1 3") state)))))
 
+  (testing "using jnz with non-zero reg and negative"
+    (let [state {:stack_ptr 5
+                 :stack []
+                 :c 15}
+          out  {:stack_ptr 1
+                :stack []
+                :c 15}]
+      (is (= out ((parse "jnz -1 -3") state)))))
+
   (testing "using jnz with zero reg"
     (let [state {:stack_ptr 0
                  :stack []
