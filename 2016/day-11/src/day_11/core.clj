@@ -15,11 +15,15 @@
        "T-G"}
    1 #{"S-G" "S-M"
        "P-G" "P-M"
+       "E-G" "E-M"
+       "D-G" "D-M"
        "E"}})
 
 (def finished-state
   {4 #{"S-G" "S-M"
        "P-G" "P-M"
+       "E-G" "E-M"
+       "D-G" "D-M"
        "T-G" "T-M"
        "R-G" "R-M"
        "C-G" "C-M"
@@ -147,6 +151,11 @@
 (defn min-steps
   ([state f-state] (min-steps #{} 0 [state] f-state))
   ([visited d states f-state]
+   (if (= (mod d 1) 0)
+     (do
+       (println "visited: " (count visited))
+       (println "at: " d)
+       (println "next: " (count states))))
    (cond
      (empty? states) -1
      (some #(= f-state %) states) d
