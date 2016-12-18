@@ -42,14 +42,6 @@
                  1 #{"E" "L-M"}}]
       (is (= true (valid-state? input))))))
 
-(deftest min-steps-test
-  (testing "using sample 1"
-    (let [input {4 #{}
-                 3 #{"L-G"}
-                 2 #{"H-G"}
-                 1 #{"E" "H-M" "L-M"}}]
-      (is (= 11 (min-steps input))))))
-
 (deftest next-valid-states-test
   (testing "basic next moves"
     (let [input {4 #{}
@@ -61,3 +53,12 @@
                       2 #{"E" "H-G" "H-M"}
                       1 #{"L-M"}}}]
       (is (= expected (next-valid-states #{} input))))))
+
+(deftest min-steps-test
+  (testing "using sample 1"
+    (let [input {4 #{}
+                 3 #{"L-G"}
+                 2 #{"H-G"}
+                 1 #{"E" "H-M" "L-M"}}]
+      (is (= 11 (min-steps input finished-state-2))))))
+

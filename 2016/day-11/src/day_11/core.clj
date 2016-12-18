@@ -1,12 +1,36 @@
 (ns day-11.core
   (:gen-class))
 
+(def finished-state-2
+  {4 #{"L-G" "H-G" "E" "H-M" "L-M"}
+   3 #{}
+   2 #{}
+   1 #{}})
+
+(def start-state
+  {4 #{}
+   3 #{"T-M"}
+   2 #{"R-G" "R-M"
+       "C-G" "C-M"
+       "T-G"}
+   1 #{"S-G" "S-M"
+       "P-G" "P-M"
+       "E"}})
+
 (def finished-state
-  {4 #{"L-G" "H-G" "E" "H-M" "L-M"}})
+  {4 #{"S-G" "S-M"
+       "P-G" "P-M"
+       "T-G" "T-M"
+       "R-G" "R-M"
+       "C-G" "C-M"
+       "E"}
+   3 #{}
+   2 #{}
+   1 #{}})
 
 (defn finished?
   [state]
-  true)
+  (= state finished-state-2))
 
 (defn elevator-floor
   [idx [k v]] (if (nil? idx) (if (some #{"E"} v) k nil) idx))
@@ -121,15 +145,16 @@
    (apply conj next-states (next-valid-states visited state))])
 
 (defn min-steps
-  ([state] (min-steps #{} 0 [state]))
-  ([visited d states]
+  ([state f-state] (min-steps #{} 0 [state] f-state))
+  ([visited d states f-state]
    (cond
      (empty? states) -1
-     (some finished? states) d
+     (some #(= f-state %) states) d
      :else (let [[visited states] (reduce conj-next-states [visited #{}] states)]
-             (min-steps visited (inc d) states)))))
+             (min-steps visited (inc d) states f-state)))))
 
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (println "Hello, World!"))
+  (println
+    (min-steps start-state finished-state)))
