@@ -18,6 +18,10 @@
        "1111000010100101011110000"
        (dragon "111100001010")))))
 
+(deftest checksum-test
+  (testing "110010110100"
+    (is (= "100" (checksum "110010110100")))))
+
 (deftest fill-test
   (testing "example use case"
     (is (= "01100" (fill "10000" 20)))))
