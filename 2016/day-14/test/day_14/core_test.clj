@@ -2,12 +2,6 @@
   (:require [clojure.test :refer :all]
             [day-14.core :refer :all]))
 
-(deftest hashes-test
-  (testing "taking first 19 hashes"
-    (let [v (last (take 19 (hashes "abc")))
-          expected "0034e0923cc38887a57bd7b1d4f953df"]
-      (is (= expected v)))))
-
 (deftest conj-triples-of-test
   (testing "basic triples"
     (let [triples {"i" #{5}}
@@ -32,3 +26,11 @@
 (deftest keys-64th-idx-test
   (testing "using basic input"
     (is (= 22728 (keys-64th-idx "abc")))))
+
+(deftest stretch-hash-test
+  (testing "basic"
+    (is (= "a107ff634856bb300138cac6568c0f24" (stretch-hash "abc" 0)))))
+
+(deftest keys-2-64th-idx-test
+  (testing "using basic input"
+    (is (= 22551 (keys-2-64th-idx "abc")))))
