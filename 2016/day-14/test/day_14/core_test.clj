@@ -3,10 +3,10 @@
             [day-14.core :refer :all]))
 
 (deftest hashes-test
-  (testing "taking first two hashes"
-    (let [v (last (take 18 (hashes "abc")))
+  (testing "taking first 19 hashes"
+    (let [v (last (take 19 (hashes "abc")))
           expected "0034e0923cc38887a57bd7b1d4f953df"]
-      (is (=  expected v)))))
+      (is (= expected v)))))
 
 (deftest conj-triples-of-test
   (testing "basic triples"
@@ -19,17 +19,14 @@
 
 (deftest conj-kys-of-test
   (testing "complex fivelets"
-    (let [kys [["a" 3]]
+    (let [kys #{3}
           triples {"d" #{23}
                    "q" #{1}
                    "i" #{5 23}
                    "z" #{20 23}}
           idx 1013
           hsh "ajhfqqqqqqadddooeiiiiinnzzzzzzakjfk"
-          expected [["a" 3]
-                    ["i" 1013]
-                    ["z" 1013]
-                    ["z" 1013]]]
+          expected #{3 20 23}]
       (is (= expected (conj-kys-of kys triples idx hsh))))))
 
 (deftest keys-64th-idx-test
