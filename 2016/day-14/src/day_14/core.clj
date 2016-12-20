@@ -4,23 +4,35 @@
   (:gen-class))
 
 (defn md5
-  [s]
-  (let [algorithm (MessageDigest/getInstance "MD5")
-        size (* 2 (.getDigestLength algorithm))
-        raw (.digest algorithm (.getBytes s))
-        sig (.toString (BigInteger. 1 raw) 16)
-        padding (apply str (repeat (- size (count sig)) "0"))]
-    (str padding sig)))
+  ([s] (md5 s 0))
+  ([s _]
+   (let [algorithm (MessageDigest/getInstance "MD5")
+         size (* 2 (.getDigestLength algorithm))
+         raw (.digest algorithm (.getBytes s))
+         sig (.toString (BigInteger. 1 raw) 16)
+         padding (apply str (repeat (- size (count sig)) "0"))]
+     (str padding sig))))
 
-(defn hashes
-  [s]
-  (map #(md5 (str s %)) (range)))
+(def md5-m (memoize md5))
+
+(defn norm-hash
+  [s i]
+  (md5-m (str s i)))
+
+(defn stretch-hash
+  [s i]
+  (->>
+    (range 0 2016)
+    (reduce
+      (fn
+        [h _] (md5 h)) (md5 (str s i)))))
+
+(def stretch-hash-m (memoize stretch-hash))
 
 (defn conj-triples-of
   [triples idx hsh]
   (let [[m s] (->>
-                hsh
-                (re-find #"(\w)\1{2,}"))]
+                hsh (re-find #"(\w)\1{2,}"))]
     (if (nil? s)
       triples
       (update-in triples [s] #(set (conj % idx))))))
@@ -39,20 +51,17 @@
           (apply conj ks))) kys)))
 
 (defn collect-keys
-  [s]
+  [s f]
   (fn
     [[kys triples] idx]
     (let [oc (count kys)
-          hsh (md5 (str s idx))
+          hsh (f s idx)
           triples (conj-triples-of triples idx hsh)
           kys (conj-kys-of kys triples idx hsh)]
-      ;(if (> (count kys) oc)
-      ;  (do
-      ;    (println idx)
-      ;    (println hsh)
-      ;    (println triples)
-      ;    (println kys)
-      ;    (println (count kys))))
+      (if (= (mod idx 1000) 0)
+        (do
+          (println idx)
+          (println (count kys))))
       [kys triples])))
 
 (defn keys-64th-idx
@@ -60,7 +69,18 @@
   (nth
     (->>
       (range)
-      (reductions (collect-keys s) [#{} {}])
+      (reductions (collect-keys s norm-hash) [#{} {}])
+      (drop-while #(-> % first count (< 64)))
+      first
+      first
+      sort) 63))
+
+(defn keys-2-64th-idx
+  [s]
+  (nth
+    (->>
+      (range)
+      (reductions (collect-keys s stretch-hash) [#{} {}])
       (drop-while #(-> % first count (< 64)))
       first
       first
@@ -69,4 +89,7 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (println "Hello, World!"))
+  (->>
+    "ahsbgdzn"
+    keys-2-64th-idx
+    println))
