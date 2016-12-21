@@ -107,6 +107,55 @@
     (reduce (fn [s f] (f s)) (map identity s))
     (apply str)))
 
+(defn rev-rot-based
+  [[_ _ _ _ c]]
+  (fn
+    [s]
+    (let [s (apply str s)
+          ss (->>
+              s
+              count
+              (range 0)
+              (map (fn [idx] ((rot<- [idx nil]) s))))
+          rs (filter
+               (fn
+                 [s1]
+                 (=
+                  (apply str ((rot-based [_ _ _ _ c]) s1)) s))
+               ss)]
+      (if (= (count rs) 0)
+        (throw
+          (Exception.
+            (str
+              "(s:" (apply str s)
+              ") (rs:" (vec rs)
+              ") (ss:" (vec ss)
+              ") (c:" c ")")))
+        (first rs)))))
+
+(defn parse-2
+  [instr]
+  (let [[fst snd & rst] (clojure.string/split instr #"\s+")]
+    (condp = [fst snd]
+      ["swap" "position"]
+      (let [[s1 _ _ s2] rst] (swap-position [s2 _ _ s1])) ;rev
+      ["swap" "letter"] (swap-letter rst) ;rev
+      ["reverse" "positions"] (reverse-pos rst) ;rev
+      ["rotate" "left"] (rot-> rst) ; rev
+      ["rotate" "right"] (rot<- rst) ; rev
+      ["move" "position"]
+      (let [[s1 _ _ s2] rst] (move-pos [s2 _ _ s1])) ;rev
+      ["rotate" "based"] (rev-rot-based rst))))
+
+(defn unscramble
+  [s instrs]
+  (->>
+    instrs
+    reverse
+    (map parse-2)
+    (reduce (fn [s f] (f s)) (map identity s))
+    (apply str)))
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
@@ -114,5 +163,5 @@
     *in*
     slurp
     clojure.string/split-lines
-    (scramble "abcdefgh")
+    (unscramble "fbgdceah")
     println))
