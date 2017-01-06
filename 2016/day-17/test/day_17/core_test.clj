@@ -35,3 +35,22 @@
       (=
        [[3 3] "DRURDRUDDLLDLUURRDULRLDUUDDDRR"]
        (shortest-path "ulqzkmiv")))))
+
+(deftest longest-path-test
+  (testing "testing: ihgpwlah"
+    (is
+      (=
+       370
+       (longest-path "ihgpwlah"))))
+
+  (testing "testing: kglvqrro"
+    (is
+      (=
+       492
+       (longest-path "kglvqrro"))))
+
+  (testing "testing: ulqzkmiv"
+    (is
+      (=
+       830
+       (longest-path "ulqzkmiv")))))

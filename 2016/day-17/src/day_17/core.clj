@@ -73,9 +73,36 @@
       #(not= (nth % 0) [3 3]))
     first))
 
+(defn finished-pos?
+  [[pos _]]
+  (= pos [3 3]))
+
+(defn step-2
+  [pwd]
+  (fn
+    [nxts]
+    (->>
+      nxts
+      (remove finished-pos?)
+      (mapcat
+        (fn
+          [[pos path]]
+          (next-paths pwd pos path))))))
+
+(defn longest-path
+  [pwd]
+  (->>
+    (iterate (step-2 pwd) [[[0 0] ""]])
+    (take-while #(not (empty? %)))
+    (mapcat identity)
+    (filter finished-pos?)
+    last
+    second
+    count))
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
   (->>
-    (shortest-path "dmypynyp")
+    (longest-path "dmypynyp")
     println))
