@@ -19,6 +19,14 @@
     (map neighbors->tile)
     (apply str)))
 
+(defn next-rows
+  [r n]
+  (->>
+    (iterate next-row r)
+    (drop 1)
+    (take n)
+    vec))
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
