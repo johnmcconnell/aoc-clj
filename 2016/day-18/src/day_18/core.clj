@@ -19,15 +19,37 @@
     (map neighbors->tile)
     (apply str)))
 
-(defn next-rows
-  [r n]
+(defn collect-rows
+  [n r]
   (->>
     (iterate next-row r)
-    (drop 1)
     (take n)
     vec))
+
+(defn count-row
+  [r]
+  (->>
+    r
+    (filter #(= % \.))
+    count))
+
+(defn count-safe
+  [rs]
+  (->>
+    rs
+    (reduce
+      (fn
+        [s r]
+        (+ s (count-row r))) 0)))
 
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (println "Hello, World!"))
+  (->>
+    *in*
+    slurp
+    clojure.string/split-lines
+    first
+    (collect-rows 40)
+    count-safe
+    println))

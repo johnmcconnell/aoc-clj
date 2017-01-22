@@ -9,9 +9,10 @@
   (testing "input: .^^^^"
     (is (= "^^..^" (next-row ".^^^^")))))
 
-(deftest next-rows-test
+(deftest collect-rows-test
   (testing "input: .^^.^.^^^^"
-    (let [expected ["^^^...^..^"
+    (let [expected [".^^.^.^^^^"
+                    "^^^...^..^"
                     "^.^^.^.^^."
                     "..^^...^^^"
                     ".^^^^.^^.^"
@@ -20,4 +21,9 @@
                     "^..^^^^.^^"
                     ".^^^..^.^^"
                     "^^.^^^..^^"]]
-      (is (= expected (next-rows ".^^.^.^^^^" 9))))))
+      (is (= expected (collect-rows 10 ".^^.^.^^^^"))))))
+
+(deftest count-safe-test
+  (testing "input: ..^^."
+    (is (= 6 (count-safe
+               (collect-rows 3 "..^^."))))))
