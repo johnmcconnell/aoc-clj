@@ -46,10 +46,11 @@
   "I don't do a whole lot ... yet."
   [& args]
   (->>
-    *in*
-    slurp
-    clojure.string/split-lines
-    first
+    (str
+      ".^^^^^.^^^..^^^^^...^.^..^^^."
+      "^^....^.^...^^^...^^^^..^...^"
+      "...^^.^.^.......^..^^...^.^.^"
+      "^..^^^^^...^.")
     (collect-rows 40)
     count-safe
     println))
