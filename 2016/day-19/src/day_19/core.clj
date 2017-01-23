@@ -50,11 +50,39 @@
     first
     remaining-pos))
 
+(defn iter-2
+  [[pos state elves alive-cnt]]
+  (let [v (nth elves pos)
+        cnt (count elves)
+        n-pos (mod (inc pos) cnt)]
+    (if (= v 1)
+      (condp = state
+        :first [n-pos :second (assoc elves pos 0) (dec alive-cnt)]
+        :second [n-pos :skip (assoc elves pos 0) (dec alive-cnt)]
+        :skip [n-pos :first elves alive-cnt])
+      [n-pos state elves alive-cnt])))
+
+(defn state-of
+  [elves]
+  (if (even? (count elves))
+    :first
+    :second))
+
+(defn elf-with-presents-2
+  [elves]
+  (->>
+    (iterate
+      iter-2
+      [(quot (count elves) 2) (state-of elves) elves (count elves)])
+    (drop-while multiple-elves?)
+    first
+    remaining-pos))
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
   (->>
     (repeat 3005290 1)
     vec
-    elf-with-presents
+    elf-with-presents-2
     println))
