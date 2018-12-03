@@ -52,21 +52,39 @@
       (filter #(> % 1) $)
       (count $))))
 
-(defn similar?
-  [s1 s2]
-  (let [->v #(map-indexed vector %)
-        v1 (->v s1)
-        v2 (->v s2)
-        [a b _] (clojure.data/diff v1 v2)
-        r1 (->> (flatten a) (remove nil?))
-        r2 (->> (flatten b) (remove nil?))]
-    #_(println (count r1) (count r2))
-    (= (count r1) (count r2) 1)))
+(defn conj-sqr
+  [i [id [x y] [w h]]]
+  (let [positions (for [dx (range 0 w)
+                        dy (range 0 h)]
+                    [(+ x dx) (+ y dy)])]
+    (reduce
+      (fn [[ids s] pos]
+        (let [s' (update-in s pos conj id)
+              ins (get-in s' pos)
+              ids' (if (> (count ins) 1)
+                     (apply disj ids ins)
+                     ids)]
+            [ids' s']))
+      i
+      positions)))
 
 (defn part-2
   []
-  (for [w my-i']
-    (filter #(similar? w %) my-i')))
+  (let [l (range 0 1000)
+        ids (set (map first claims))
+        sqr (->>
+              (for [_ l]
+                (->>
+                  (for [_ l]
+                    #{})
+                  vec))
+              vec)]
+    (as-> sqr $
+      (reduce
+        conj-sqr
+        [ids $]
+        claims)
+      (first $))))
 
 (defn -main
   "I don't do a whole lot ... yet."
