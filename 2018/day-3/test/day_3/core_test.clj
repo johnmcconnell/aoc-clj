@@ -1,0 +1,11 @@
+(ns day-3.core-test
+  (:require [clojure.test :refer :all]
+            [day-2.core :refer :all]))
+
+(deftest part-1-test
+  (testing "part 1"
+    (is (= 0 (part-1)))))
+
+(deftest part-2-test
+  (testing "part 2"
+    (is (= 0 (part-2)))))
