@@ -100,8 +100,9 @@
 
 (defn assoc-remaining-work
   [d c]
+  (println d c)
   (let [v (-> c first int (- 4))]
-    (assoc c v)))
+    (assoc d c v)))
 
 (defn count-seconds
   [ttl rw-count
@@ -110,19 +111,22 @@
    ready]
   (println "==== rw-count ====")
   (println rw-count)
+  (println "==== deps ====")
+  (clojure.pprint/pprint deps)
   (println "==== working ====")
   (println working)
   (println "==== finished ====")
-  (println finished)
+  (prn finished)
   (println "==== ready ====")
   (println ready)
-  (if (empty? ready)
+  (if (and (empty? ready) (empty? working))
     ttl
-    (let [[w' df'] (reduce
+    (let [dt (apply min (map second working))
+          [w' df'] (reduce
                      (fn [[d f] [k v]]
-                       (if (zero? (dec v))
+                       (if (zero? (- v dt))
                          [(dissoc d k) (conj f k)]
-                         [(assoc d k (dec v)) f]))
+                         [(assoc d k (- v dt)) f]))
                      [{} #{}]
                      working)
           f' (apply conj finished df')
@@ -136,19 +140,23 @@
                   deps
                   parent-groups)
           ready' (->>
-                   parent-groups
-                   (filter (comp empty? deps' second))
-                   (filter (comp not (partial contains? finished)))
-                   (filter (comp not (partial contains? (set ready))))
-                   set)
+                   (map second parent-groups)
+                   (mapcat vec)
+                   (filter (comp empty? deps')))
+          ready'' (->>
+                    ready'
+                    (filter (comp not (partial contains? finished)))
+                    (filter (comp not (partial contains? (set ready)))))
           rw-count' (+ rw-count (count df'))
           [nws ready4] (split-at rw-count' ready')
+          _ (println "ready':" ready')
+          _ (println "ready'':" ready'')
           w'' (reduce
                 assoc-remaining-work
                 w'
                 nws)]
       (recur
-        (inc ttl)
+        (+ ttl dt)
         rw-count'
         f'
         w''
@@ -170,6 +178,7 @@
               assoc-remaining-work
               {}
               working)
+            dependencies
             d-parents
             rdy')]
     v))
