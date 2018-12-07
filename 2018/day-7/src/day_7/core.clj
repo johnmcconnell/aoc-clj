@@ -98,22 +98,81 @@
             (sort rdy))]
     (apply str v)))
 
+(defn assoc-remaining-work
+  [d c]
+  (let [v (-> c first int (- 4))]
+    (assoc c v)))
+
 (defn count-seconds
   [ttl rw-count
    finished working
-   deps dparents
+   deps deps-pars
    ready]
-  nil)
+  (println "==== rw-count ====")
+  (println rw-count)
+  (println "==== working ====")
+  (println working)
+  (println "==== finished ====")
+  (println finished)
+  (println "==== ready ====")
+  (println ready)
+  (if (empty? ready)
+    ttl
+    (let [[w' df'] (reduce
+                     (fn [[d f] [k v]]
+                       (if (zero? (dec v))
+                         [(dissoc d k) (conj f k)]
+                         [(assoc d k (dec v)) f]))
+                     [{} #{}]
+                     working)
+          f' (apply conj finished df')
+          parent-groups (map #(vector % (deps-pars %)) df')
+          deps' (reduce
+                  (fn [dps1 [c pars]]
+                    (reduce
+                      #(update %1 %2 disj c)
+                      dps1
+                      pars))
+                  deps
+                  parent-groups)
+          ready' (->>
+                   parent-groups
+                   (filter (comp empty? deps' second))
+                   (filter (comp not (partial contains? finished)))
+                   (filter (comp not (partial contains? (set ready))))
+                   set)
+          rw-count' (+ rw-count (count df'))
+          [nws ready4] (split-at rw-count' ready')
+          w'' (reduce
+                assoc-remaining-work
+                w'
+                nws)]
+      (recur
+        (inc ttl)
+        rw-count'
+        f'
+        w''
+        deps'
+        deps-pars
+        ready4))))
 
 (defn part-2
   []
   (let [all-chars (set (concat (keys d-parents) (keys dependencies)))
         rdy (clojure.set/difference all-chars (-> dependencies keys set))
+        w-cnt 5
+       [working rdy'] (split-at w-cnt rdy)
         v (count-seconds
-            dependencies
+            0
+            (- w-cnt (count working))
+            #{}
+            (reduce
+              assoc-remaining-work
+              {}
+              working)
             d-parents
-            (sort rdy))]
-    (apply str v)))
+            rdy')]
+    v))
 
 (defn -main
   "I don't do a whole lot ... yet."
