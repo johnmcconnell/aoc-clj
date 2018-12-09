@@ -132,6 +132,7 @@
          c-node {:val 0 :l 0 :r 0}
          nodes {0 c-node}
          scores {}]
+    (if (zero? (mod cm 10000)) (println "working on: " cm " of: " last-marble))
     (cond
       (> cm last-marble) (do
                            #_(clojure.pprint/pprint nodes)
@@ -163,7 +164,7 @@
 
 (defn part-2
   []
-  nil)
+  (scores 441 (* 71032 100)))
 
 (defn -main
   "I don't do a whole lot ... yet."
