@@ -59,7 +59,6 @@
 
 (defn solve-quad
   [a b c]
-  (prn a b c)
   (let [t1 (- 0 b)
         t2 (Math/sqrt (- (* b b) (* 4 a c)))
         t3 (* 2 a)
@@ -90,7 +89,7 @@
                 reverse))
         solve-quad' (fn
                       [a b c]
-                      (solve-quad (/ a 2) b c))
+                      (solve-quad (/ a 2) (+ b (/ a 2)) c))
         rs (for [d dms]
              (->>
                d
@@ -99,7 +98,6 @@
                  #(if (contains? #{nil :*} %) % (Math/round (double %))))
                set))
         rs-matter (remove #(contains? % :*) rs)]
-    (prn rs)
     (if (empty? rs-matter)
       #{:*}
       (apply clojure.set/intersection rs-matter))))
@@ -179,7 +177,11 @@ collision at: 11
 
   }
   ]
-  """
+
+  p=<758,2493,568>, v=<-88,-150,-64>, a=<4,-9,3>
+  p=<-1336,-2115,-1172>, v=<80,104,68>, a=<5,11,5>
+"""
+
 (defn part-2
   []
   (as-> vectors $
@@ -201,7 +203,8 @@ collision at: 11
           (println "v1:" v1 " intersects with v2:" v2 " at: " t))
         [its v1 v2]))
     (remove (comp empty? first) $)
-    (->events $)))
+    (->events $)
+    (reduce (fn [vs [t coll]] (apply disj vs coll)) (set vectors) $)))
 
 (defn -main
   "I don't do a whole lot ... yet."
