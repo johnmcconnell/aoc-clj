@@ -49,12 +49,6 @@
   (prn x)
   x)
 
-(defn quad-zeros
-  [[a b c]]
-  (if (= 0 a b c)
-    #{:*}
-    #{}))
-
 (defn solve-linear
   [a b]
   (if (zero? a)
@@ -65,6 +59,7 @@
 
 (defn solve-quad
   [a b c]
+  (prn a b c)
   (let [t1 (- 0 b)
         t2 (Math/sqrt (- (* b b) (* 4 a c)))
         t3 (* 2 a)
@@ -93,14 +88,18 @@
               (->>
                 (map - (->d v1 i) (->d v2 i))
                 reverse))
+        solve-quad' (fn
+                      [a b c]
+                      (solve-quad (/ a 2) b c))
         rs (for [d dms]
              (->>
                d
-               (apply solve-quad)
+               (apply solve-quad')
                #_(map
                  #(if (contains? #{nil :*} %) % (Math/round (double %))))
                set))
         rs-matter (remove #(contains? % :*) rs)]
+    (prn rs)
     (if (empty? rs-matter)
       #{:*}
       (apply clojure.set/intersection rs-matter))))
@@ -119,54 +118,90 @@
   [events]
   (fn
     [coll t]
-    (let [pairs (get events t)]
-      (reduce
-        (fn
-          [c [v1 v2]]
-          (if (and (contains? coll v1) (contains? coll v2))
-            (disj c v1 v2)
-            c))
-        coll
-        pairs))))
+    (prn t)
+    (if (< t 0)
+      coll
+      (let [pairs (get events t)]
+        (reduce
+          (fn
+            [c [v1 v2]]
+            (prn t v1 v2)
+            (if (and (contains? coll v1)
+                     (contains? coll v2)
+                     (= (position-at v1 t)
+                        (position-at v2 t)))
+              (disj c v1 v2)
+              c))
+          coll
+          pairs)))))
 
+(defn combinations
+  [coll]
+  (if (empty? coll)
+    nil
+    (let [[x & xs] coll]
+      (concat
+        (for [y xs] [x y])
+        (combinations xs)))))
+
+(defn ->events
+  [coll]
+  (as-> coll $
+    (reduce
+      (fn
+        [d [its v1 v2]]
+        (update d (-> its sort first) conj v1 v2))
+      {}
+      $)
+    (let [e $]
+      (reduce
+        (fn [coll t]
+          (conj coll [t (get e t)]))
+        []
+        (-> e keys sort)))))
+
+"""
+collision at: 11
+  [
+    {p [14 -9 34], v [-40 -258 -28], a [4 -9 3]}
+  p=<758,2493,568>, v=<-88,-150,-64>, a=<4,-9,3>
+  [[758 2493 568] [-88 -150 -64] [4 -9 3]]
+
+    {p [14 -9 34], v [140 236 128], a [5 11 5]}
+  p=<-1336,-2115,-1172>, v=<80,104,68>, a=<5,11,5>
+  [[-1336 -2115 -1172] [80 104 68] [5 11 5]]
+
+    {p [14 -9 34], v [-63 -16 214], a [-1 -3 15]}
+  p=<704,-15,-1544>, v=<-51,20,34>, a=<-1,-3,15>
+
+    {p [14 -9 34], v [80 6 95], a [2 -1 3]
+  p=<-814,-147,-908>, v=<56,18,59>, a=<2,-1,3>
+
+  }
+  ]
+  """
 (defn part-2
   []
   (as-> vectors $
-    (for [v1 $]
-      (let [intersects (for [v2 $
-                             :when (not= v1 v2)]
-                         [v2 (intersections v1 v2)])]
-        [v1 (remove (comp empty? second) intersects)]))
-    (map-indexed vector $)
-    (for [[i [v1 its]] $]
-      (do
-        (prn "i:" i " of:" (count $))
-        (doseq [[v2 t] its]
-          (println "v1:" v1 " intersects with v2:" v2 " at: " t))
-        [v1 its]))
-    (reduce
-      (fn
-        [e1 [v1 its]]
-        (reduce
-          (fn [e2 [v2 ts]]
-            (reduce
-              (fn [e3 t]
-                (update e3 t conj [v1 v2]))
-              e2
-              ts))
-          e1
-          its))
-      {}
+    (combinations $)
+    (map
+      (fn [[v1 v2]]
+        (let [its (intersections v1 v2)
+              its' (->>
+                     its
+                     (filter (comp integer? rationalize))
+                     (filter pos?))]
+          [its' v1 v2]))
       $)
-    (let [events $]
-      (reduce
-        (simulate events)
-        (set vectors)
-        (->>
-          events
-          keys
-          sort
-          (filter integer?))))))
+    (map-indexed vector $)
+    (for [[i [its v1 v2]] $]
+      (do
+        (if (zero? (mod i 1000)) (prn "i:" i " of:" (count $)))
+        #_(doseq [t its]
+          (println "v1:" v1 " intersects with v2:" v2 " at: " t))
+        [its v1 v2]))
+    (remove (comp empty? first) $)
+    (->events $)))
 
 (defn -main
   "I don't do a whole lot ... yet."
