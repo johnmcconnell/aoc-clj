@@ -1,8 +1,8 @@
-FROM_NS='day-10'
+FROM_NS='day-11'
 FROM_NS2="${FROM_NS//-/_}"
 FROM_YEAR='2018'
 
-TO_NS='day-11'
+TO_NS='day-12'
 TO_NS2="${TO_NS//-/_}"
 TO_YEAR='2018'
 
